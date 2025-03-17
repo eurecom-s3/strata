@@ -1,0 +1,154 @@
+diff --git a/build.sh b/build.sh
+index 1aa1dddd63..6514ad9437 100755
+--- a/build.sh
++++ b/build.sh
+@@ -18,7 +18,7 @@ msg() {
+ }
+ 
+ # Default targets to build. Change with argument. small = i386-softmmu
+-TARGET_LIST="x86_64-softmmu,i386-softmmu,arm-softmmu,aarch64-softmmu,ppc-softmmu,mips-softmmu,mipsel-softmmu,mips64-softmmu"
++TARGET_LIST="x86_64-softmmu,i386-softmmu" #,arm-softmmu,aarch64-softmmu"
+ LLVM_CONFIG_BINARY="${LLVM_CONFIG_BINARY:-llvm-config-11}"
+ 
+ pypanda=""
+@@ -146,6 +146,8 @@ set -x
+ "${PANDA_DIR_REL}/configure" \
+     --target-list=$TARGET_LIST \
+     --prefix=$prefix \
++    --extra-cflags=-Wno-error \
++    --extra-cxxflags=-Wno-error \
+     $COMPILER_CONFIG \
+     $LLVM_CONFIG \
+     "$@"
+diff --git a/dump.c b/dump.c
+index ffb0cf8934..129ae28ae5 100644
+--- a/dump.c
++++ b/dump.c
+@@ -1624,7 +1624,8 @@ static void dump_init(DumpState *s, int fd, bool has_format,
+         s->sh_info = 1; /* PT_NOTE */
+ 
+         /* the type of shdr->sh_info is uint32_t, so we should avoid overflow */
+-        if (s->list.num <= UINT32_MAX - 1) {
++
++        if (1) { //s->list.num <= UINT32_MAX - 1) {
+             s->sh_info += s->list.num;
+         } else {
+             s->sh_info = UINT32_MAX;
+diff --git a/panda/include/panda/panda_api.h b/panda/include/panda/panda_api.h
+index 0bad333c5b..3d5c1333e0 100644
+--- a/panda/include/panda/panda_api.h
++++ b/panda/include/panda/panda_api.h
+@@ -31,7 +31,8 @@ void panda_register_callback_helper(void* plugin, panda_cb_type type, panda_cb*
+ void panda_enable_callback_helper(void *plugin, panda_cb_type, panda_cb* cb);
+ void panda_disable_callback_helper(void *plugin, panda_cb_type, panda_cb* cb);
+ 
+-int rr_get_guest_instr_count_external(void);
++uint64_t rr_get_guest_instr_count_external(void);
++
+ 
+ int panda_virtual_memory_read_external(CPUState *env, target_ulong addr, char *buf, int len);
+ int panda_virtual_memory_write_external(CPUState *env, target_ulong addr, char *buf, int len);
+diff --git a/panda/plugins/config.panda b/panda/plugins/config.panda
+index 60b8166f4a..b0b140b2ac 100644
+--- a/panda/plugins/config.panda
++++ b/panda/plugins/config.panda
+@@ -39,7 +39,7 @@ replaymovie
+ rust_skeleton
+ scissors
+ signal
+-snake_hook
++#snake_hook
+ stringsearch
+ syscalls2
+ syscalls_logger
+@@ -48,3 +48,4 @@ trace
+ track_intexc
+ unigrams
+ wintrospection
++collector2
+diff --git a/panda/python/core/create_panda_datatypes.py b/panda/python/core/create_panda_datatypes.py
+index 0285a655ee..27d55fa598 100755
+--- a/panda/python/core/create_panda_datatypes.py
++++ b/panda/python/core/create_panda_datatypes.py
+@@ -281,6 +281,9 @@ def compile(arch, bits, pypanda_headers, install, static_inc):
+     # Now syscalls2 common:
+     define_clean_header(ffi, include_dir + "/syscalls2_info.h")
+ 
++    
++    define_clean_header(ffi, include_dir + "/qemu_helpers.h")
++
+     # A few more CFFI types now that we have common datatypes
+     # Manually define syscall_ctx_t - taken from syscalls2/generated/syscalls_ext_typedefs.h
+     # It uses a #DEFINES as part of the array size so CFFI can't hanle that :
+@@ -314,7 +317,41 @@ def compile(arch, bits, pypanda_headers, install, static_inc):
+     
+     # has to be at the end because it depends on something in list
+     define_clean_header(ffi, include_dir + "/taint2.h")
+-    
++  
++    ffi.cdef("""
++        typedef struct FlatRange {
++            MemoryRegion *             mr;                   
++            hwaddr                     offset_in_region;     
++            AddrRange                  addr;                 
++            uint8_t                    dirty_log_mask;       
++            _Bool                      romd_mode;           
++            _Bool                      readonly;           
++            _Bool                      :8;
++            _Bool                      :8;
++            _Bool                      :8;
++            _Bool                      :8;
++            _Bool                      :8;
++            _Bool                      :8;
++            _Bool                      :8;
++            _Bool                      :8;
++            _Bool                      :8;
++            _Bool                      :8;
++            _Bool                      :8;
++            _Bool                      :8;
++            _Bool                      :8;
++            } FlatRange;
++            """)
++
++    ffi.cdef("""
++        typedef struct FlatView {
++            struct rcu_head rcu;
++            unsigned ref;
++            FlatRange *ranges;
++            unsigned nr;
++            unsigned nr_allocated;
++            } FlatView;
++        """)
++
+     ffi.compile(verbose=True,debug=True,tmpdir='./pandare/autogen')
+ 
+ 
+diff --git a/panda/python/core/pandare/panda.py b/panda/python/core/pandare/panda.py
+index 111903f381..9f2bddc8ec 100755
+--- a/panda/python/core/pandare/panda.py
++++ b/panda/python/core/pandare/panda.py
+@@ -1620,6 +1620,11 @@ class Panda():
+     def lookup_gic(self,n):
+         return self.libpanda.lookup_gic(n)
+ 
++    def get_address_space_memory(self):
++        return self.libpanda.address_space_memory
++
++    def get_address_space_io(self):
++        return self.libpanda.address_space_io
+     ##################### OSI FUNCTIONS ###########
+     #Convenience functions to interact with the Operating System Instrospection (OSI) class of plugins.
+ 
+diff --git a/panda/src/panda_api.c b/panda/src/panda_api.c
+index c6e02af9d6..5f15e27934 100644
+--- a/panda/src/panda_api.c
++++ b/panda/src/panda_api.c
+@@ -129,7 +129,7 @@ void panda_disable_callback_helper(void *plugin, panda_cb_type type, panda_cb* c
+ 
+ //int panda_replay(char *replay_name) -> Now use panda_replay_being(char * replay_name)
+ 
+-int rr_get_guest_instr_count_external(void){
++uint64_t rr_get_guest_instr_count_external(void){
+ 	return rr_get_guest_instr_count();
+ }
+ 

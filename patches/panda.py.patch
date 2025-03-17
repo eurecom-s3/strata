@@ -1,0 +1,12 @@
+2152a2153,2154
+>                     if 0xC0000000 <= self.pos < 0x100000000:
+>                         return b'\x00' * size
+2160a2163,2164
+>                 if 0xC0000000 <= self.pos < 0x100000000:
+>                     return b'\x00' * size
+2212,2213c2216,2217
+<                 linux.LinuxUtilities.aslr_mask_symbol_table(
+<                     constructed_original.context, constructed_original.config['vmlinux'], constructed_original.config['primary'])
+---
+>                 #linux.LinuxUtilities.aslr_mask_symbol_table(
+>                 #    constructed_original.context, constructed_original.config['vmlinux'], constructed_original.config['primary'])
