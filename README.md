@@ -55,7 +55,7 @@ export ARTIFACTS=$(pwd)
 ```
 
 ## Reproduce Table 1, Table 2 and Figure 3
-1) Extract the idle dataset download from [http://strata-artifacts.dynv6.net/idle.7z](http://strata-artifacts.dynv6.net/idle.7z) in ```$ARTIFACTS/idle``` and enter in it
+1) Extract the idle dataset download from [idle.7z](https://www.s3.eurecom.fr/datasets/datasets/applications/03:2025_03:2025_andrea_strata/idle.7z) in ```$ARTIFACTS/idle``` and enter in it
 ```cd $ARTIFACTS/idle```.
 
 2) ### (OPTIONAL) Reproduce intermediate files for Table 1
@@ -153,7 +153,7 @@ export ARTIFACTS=$(pwd)
 
 ## Reproduce results AVML vs LiME (Beginning of IMPACT OF THE ACQUISITION TECHNIQUE)
 - Delete ```idle``` dataset (no more neeeded)
-- Download the avml dataset [http://strata-artifacts.dynv6.net/avml.7z](http://strata-artifacts.dynv6.net/avml.7z) and extract it into ```$ARTIFACTS/avml```
+- Download the avml dataset [avml.7z](https://www.s3.eurecom.fr/datasets/datasets/applications/03:2025_03:2025_andrea_strata/avml.7z) and extract it into ```$ARTIFACTS/avml```
 
 1) ### (OPTIONAL) Reproduce intermediate files
   - If you want to reproduce the intermediate analysis files (already present
@@ -172,7 +172,7 @@ export ARTIFACTS=$(pwd)
 
 ## Reproduce Table 3
   - Delete ```avml``` dataset (no more needed)
-  - Download the fs dataset [http://strata-artifacts.dynv6.net/fs.7z](http://strata-artifacts.dynv6.net/fs.7z) and extract it into ```$ARTIFACTS/fs```
+  - Download the fs dataset [fs.7z](https://www.s3.eurecom.fr/datasets/datasets/applications/03:2025_03:2025_andrea_strata/fs.7z) and extract it into ```$ARTIFACTS/fs```
 
 1) ### (OPTIONAL) Reproduce intermediate files
     - If you want to reproduce the intermediate analysis files (already present
@@ -191,14 +191,14 @@ export ARTIFACTS=$(pwd)
 
 ## Reproduce Table 4 and Table 5
 - Delete ```avml``` dataset (no more neeeded)
-- Download the smearing dataset [http://strata-artifacts.dynv6.net/smearing.7z](http://strata-artifacts.dynv6.net/smearing.7z) and extract it into ```$ARTIFACTS/smearing```
+- Download the smearing dataset [smearing.7z](https://www.s3.eurecom.fr/datasets/datasets/applications/03:2025_03:2025_andrea_strata/smearing.7z) and extract it into ```$ARTIFACTS/smearing```
 
 1) ### (OPTIONAL) Reproduce intermediate files
     - If you want to reproduce the intermediate analysis files (already present
       precomputed in the dataset) it is required at least 256GB of RAM, other 256GB of disk space and 2 days
       to replay the PANDA snapshots
     
-    - Download the machine files [http://strata-artifacts.dynv6.net/machine.7z](http://strata-artifacts.dynv6.net/machine.7z) and expand it into in ```$ARTIFACTS/smearing``` ***If you want to reproduce also the intermediate files of next section do NOT delete the machine files archive, it can be reused***
+    - Download the machine files [machine.7z](https://www.s3.eurecom.fr/datasets/datasets/applications/03:2025_03:2025_andrea_strata/machine.7z) and expand it into in ```$ARTIFACTS/smearing``` ***If you want to reproduce also the intermediate files of next section do NOT delete the machine files archive, it can be reused***
     - From ```strata_acasac2024``` directory run
     ```script
     ./scripts/smearing_replay.sh
@@ -218,7 +218,7 @@ export ARTIFACTS=$(pwd)
       precomputed in the dataset) it is required at least 256GB of RAM and 1 day
       to replay the PANDA snapshots
     
-    - Download the machine files [http://strata-artifacts.dynv6.net/machine.7z](http://strata-artifacts.dynv6.net/machine.7z) and expand it into in ```$ARTIFACTS/smearing```
+    - Download the machine files [machine.7z](https://www.s3.eurecom.fr/datasets/datasets/applications/03:2025_03:2025_andrea_strata/machine.7z) and expand it into in ```$ARTIFACTS/smearing```
     - From ```strata_acasac2024``` directory run
     ```script
     ./scripts/structs_replay.sh
